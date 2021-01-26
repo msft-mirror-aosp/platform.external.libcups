@@ -1,3 +1,6 @@
+# *** THIS PACKAGE HAS SPECIAL LICENSING CONDITIONS.  PLEASE
+#     CONSULT THE OWNERS AND opensource-licensing@google.com BEFORE
+#     DEPENDING ON IT IN YOUR PROJECT. ***
 name: "libcups"
 description: "CUPS is the standards-based, open source printing system."
 third_party {
