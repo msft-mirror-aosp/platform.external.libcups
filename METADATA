@@ -20,4 +20,7 @@ third_party {
     month: 10
     day: 28
   }
+  security {
+      tag: "NVD-CPE2.3:cpe:/a:cups:cups:2.3.3"
+  }
 }
