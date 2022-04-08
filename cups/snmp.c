@@ -1,11 +1,16 @@
 /*
  * SNMP functions for CUPS.
  *
- * Copyright © 2007-2019 by Apple Inc.
- * Copyright © 2006-2007 by Easy Software Products, all rights reserved.
+ * Copyright 2007-2014 by Apple Inc.
+ * Copyright 2006-2007 by Easy Software Products, all rights reserved.
  *
- * Licensed under Apache License v2.0.  See the file "LICENSE" for more
- * information.
+ * These coded instructions, statements, and computer programs are the
+ * property of Apple Inc. and are protected by Federal copyright
+ * law.  Distribution and use rights are outlined in the file "LICENSE.txt"
+ * "LICENSE" which should have been included with this file.  If this
+ * file is missing or damaged, see the license at "http://www.cups.org/".
+ *
+ * This file is subject to the Apple OS-Developed Software exception.
  */
 
 /*
@@ -14,7 +19,6 @@
 
 #include "cups-private.h"
 #include "snmp-private.h"
-#include "debug-internal.h"
 #ifdef HAVE_POLL
 #  include <poll.h>
 #endif /* HAVE_POLL */
@@ -129,13 +133,9 @@ _cupsSNMPDefaultCommunity(void)
     {
       linenum = 0;
       while (cupsFileGetConf(fp, line, sizeof(line), &value, &linenum))
-	if (!_cups_strcasecmp(line, "Community"))
+	if (!_cups_strcasecmp(line, "Community") && value)
 	{
-	  if (value)
-	    strlcpy(cg->snmp_community, value, sizeof(cg->snmp_community));
-	  else
-	    cg->snmp_community[0] = '\0';
-
+	  strlcpy(cg->snmp_community, value, sizeof(cg->snmp_community));
 	  break;
 	}
 
@@ -1167,7 +1167,7 @@ asn1_encode_snmp(unsigned char *buffer,	/* I - Buffer */
   memcpy(bufptr, packet->community, commlen);
   bufptr += commlen;
 
-  *bufptr++ = (unsigned char)packet->request_type;	/* Get-Request-PDU/Get-Next-Request-PDU */
+  *bufptr++ = packet->request_type;	/* Get-Request-PDU/Get-Next-Request-PDU */
   asn1_set_length(&bufptr, reqlen);
 
   asn1_set_integer(&bufptr, (int)packet->request_id);
@@ -1233,19 +1233,16 @@ asn1_get_integer(
   int	value;				/* Integer value */
 
 
-  if (*buffer >= bufend)
-    return (0);
-
   if (length > sizeof(int))
   {
     (*buffer) += length;
     return (0);
   }
 
-  for (value = (**buffer & 0x80) ? ~0 : 0;
+  for (value = (**buffer & 0x80) ? -1 : 0;
        length > 0 && *buffer < bufend;
        length --, (*buffer) ++)
-    value = ((value & 0xffffff) << 8) | **buffer;
+    value = (value << 8) | **buffer;
 
   return (value);
 }
@@ -1261,9 +1258,6 @@ asn1_get_length(unsigned char **buffer,	/* IO - Pointer in buffer */
 {
   unsigned	length;			/* Length */
 
-
-  if (*buffer >= bufend)
-    return (0);
 
   length = **buffer;
   (*buffer) ++;
@@ -1306,9 +1300,6 @@ asn1_get_oid(
 		*oidend;		/* End of OID buffer */
   int		number;			/* OID number */
 
-
-  if (*buffer >= bufend)
-    return (0);
 
   valend = *buffer + length;
   oidptr = oid;
@@ -1358,12 +1349,9 @@ asn1_get_packed(
   int	value;				/* Value */
 
 
-  if (*buffer >= bufend)
-    return (0);
-
   value = 0;
 
-  while (*buffer < bufend && (**buffer & 128))
+  while ((**buffer & 128) && *buffer < bufend)
   {
     value = (value << 7) | (**buffer & 127);
     (*buffer) ++;
@@ -1391,9 +1379,6 @@ asn1_get_string(
     char          *string,		/* I  - String buffer */
     size_t        strsize)		/* I  - String buffer size */
 {
-  if (*buffer >= bufend)
-    return (NULL);
-
   if (length > (unsigned)(bufend - *buffer))
     length = (unsigned)(bufend - *buffer);
 
@@ -1435,9 +1420,6 @@ asn1_get_type(unsigned char **buffer,	/* IO - Pointer in buffer */
 {
   int	type;				/* Type */
 
-
-  if (*buffer >= bufend)
-    return (0);
 
   type = **buffer;
   (*buffer) ++;
@@ -1635,7 +1617,7 @@ asn1_size_length(unsigned length)	/* I - Length value */
 
 
 /*
- * 'asn1_size_oid()' - Figure out the number of bytes needed for an
+ * 'asn1_size_oid()' - Figure out the numebr of bytes needed for an
  *                     OID value.
  */
 
