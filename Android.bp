@@ -118,7 +118,6 @@ cc_library_shared {
         "-Wno-unused-value",
         "-Wno-sign-compare",
         "-Wno-missing-field-initializers",
-        "-Wno-implicit-function-declaration",
         "-Wno-deprecated-declarations",
         "-Werror",
     ],
