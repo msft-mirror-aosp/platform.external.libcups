@@ -1,3 +1,5 @@
 kumarashishg@google.com
 anothermark@google.com
 aprasath@google.com
+bmgordon@google.com
+include platform/system/core:/janitors/OWNERS #{LAST_RESORT_SUGGESTION}
